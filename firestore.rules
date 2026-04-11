@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /sectors/oregon/logs
+    // Fields:
+    //   - timestamp: string (ISO 8601)
+    //   - type: string (INFO|WARN|ERROR|STRIKE)
+    //   - message: string
+    //   - sector: string
+    //
+    // Collection: /sectors/oregon/nodes
+    // Fields:
+    //   - nodeId: string
+    //   - active: bool
+    //   - lastSeen: string (ISO 8601)
+    //   - threatDetected: bool (optional)
+    //
+    // Document: /sectors/oregon/telemetry/current
+    // Fields:
+    //   - threatLevel: number (0-100)
+    //   - coreTemp: number
+    //   - latency: number
+    //   - updatedAt: string (ISO 8601)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.email == "architect@azrael-core.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidLog(data) {
+      return data.keys().hasAll(['timestamp', 'type', 'message', 'sector']) &&
+             data.timestamp is string &&
+             data.type in ['INFO', 'WARN', 'ERROR', 'STRIKE'] &&
+             data.message is string && data.message.size() < 1000 &&
+             data.sector is string;
+    }
+
+    function isValidNode(data) {
+      return data.keys().hasAll(['nodeId', 'active', 'lastSeen']) &&
+             data.nodeId is string &&
+             data.active is bool &&
+             data.lastSeen is string;
+    }
+
+    function isValidTelemetry(data) {
+      return data.keys().hasAll(['threatLevel', 'updatedAt']) &&
+             data.threatLevel is number && data.threatLevel >= 0 && data.threatLevel <= 100 &&
+             data.updatedAt is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /sectors/oregon {
+      match /logs/{logId} {
+        allow read: if isAuthenticated();
+        allow create: if isAdmin() && isValidLog(request.resource.data);
+      }
+      
+      match /nodes/{nodeId} {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin() && isValidNode(request.resource.data);
+      }
+      
+      match /telemetry/current {
+        allow read: if isAuthenticated();
+        allow write: if isAdmin() && isValidTelemetry(request.resource.data);
+      }
+    }
+  }
+}

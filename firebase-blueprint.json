@@ -1,0 +1,54 @@
+{
+  "entities": {
+    "LogEntry": {
+      "title": "LogEntry",
+      "description": "System logs from the Oregon Sector mesh.",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp" },
+        "type": { "type": "string", "enum": ["INFO", "WARN", "ERROR", "STRIKE"], "description": "Log severity level" },
+        "message": { "type": "string", "description": "Log message content" },
+        "sector": { "type": "string", "description": "Source sector" }
+      },
+      "required": ["timestamp", "type", "message", "sector"]
+    },
+    "NodeStatus": {
+      "title": "NodeStatus",
+      "description": "Status of a specific mesh node.",
+      "type": "object",
+      "properties": {
+        "nodeId": { "type": "string", "description": "Unique node identifier" },
+        "active": { "type": "boolean", "description": "Whether the node is currently stable" },
+        "lastSeen": { "type": "string", "format": "date-time", "description": "Last heartbeat" },
+        "threatDetected": { "type": "boolean", "description": "True if malicious activity is present" }
+      },
+      "required": ["nodeId", "active", "lastSeen"]
+    },
+    "Telemetry": {
+      "title": "Telemetry",
+      "description": "Real-time system telemetry.",
+      "type": "object",
+      "properties": {
+        "threatLevel": { "type": "number", "description": "Current system threat percentage (0-100)" },
+        "coreTemp": { "type": "number", "description": "Core temperature in Celsius" },
+        "latency": { "type": "number", "description": "Mesh loopback latency in ms" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["threatLevel", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/sectors/oregon/logs/{logId}": {
+      "schema": "LogEntry",
+      "description": "Real-time logs for the Oregon sector."
+    },
+    "/sectors/oregon/nodes/{nodeId}": {
+      "schema": "NodeStatus",
+      "description": "Mesh node statuses in Oregon."
+    },
+    "/sectors/oregon/telemetry/current": {
+      "schema": "Telemetry",
+      "description": "Current system-wide telemetry for Oregon."
+    }
+  }
+}

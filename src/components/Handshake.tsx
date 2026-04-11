@@ -7,26 +7,9 @@ export const Handshake: React.FC = () => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const sequence = async () => {
-      while (true) {
-        setStatus('IDLE');
-        setProgress(0);
-        await new Promise(r => setTimeout(r, 2000));
-        
-        setStatus('SCANNING');
-        for (let i = 0; i <= 100; i += 2) {
-          setProgress(i);
-          await new Promise(r => setTimeout(r, 50));
-        }
-        
-        setStatus('VALIDATING');
-        await new Promise(r => setTimeout(r, 1500));
-        
-        setStatus('SECURE');
-        await new Promise(r => setTimeout(r, 5000));
-      }
-    };
-    sequence();
+    // Simulated handshake removed. Awaiting physical kinetic validation from Oregon Sector.
+    setStatus('IDLE');
+    setProgress(0);
   }, []);
 
   return (
@@ -89,7 +72,7 @@ export const Handshake: React.FC = () => {
         </div>
         
         <p className="text-[10px] text-gray-500 font-mono uppercase tracking-widest">
-          {status === 'SECURE' ? 'AES-256 // HARDWARE-BOUND // WINSTON-7' : 'ENCRYPTION LAYER: STANDBY'}
+          {status === 'SECURE' ? 'AES-256 // HARDWARE-BOUND // OREGON-7' : 'ENCRYPTION LAYER: STANDBY'}
         </p>
       </div>
 
